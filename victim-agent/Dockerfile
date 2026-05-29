@@ -8,7 +8,8 @@ RUN pip install --no-cache-dir hatchling
 COPY pyproject.toml .
 COPY agent/ agent/
 
-RUN pip install --no-cache-dir --prefix=/install .
+RUN pip install --no-cache-dir --prefix=/install packaging && \
+    pip install --no-cache-dir --prefix=/install .
 
 # Stage 2: lean runtime image
 FROM python:3.11-slim AS runtime
