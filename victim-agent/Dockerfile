@@ -1,23 +1,13 @@
-# Stage 1: build dependencies
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir hatchling
+RUN pip install --no-cache-dir hatchling packaging
 
 COPY pyproject.toml .
 COPY agent/ agent/
 
-RUN pip install --no-cache-dir --prefix=/install packaging && \
-    pip install --no-cache-dir --prefix=/install .
-
-# Stage 2: lean runtime image
-FROM python:3.11-slim AS runtime
-
-WORKDIR /app
-
-COPY --from=builder /install /usr/local
-COPY agent/ agent/
+RUN pip install --no-cache-dir .
 
 RUN useradd -r -u 1000 appuser && chown -R appuser /app
 USER appuser
