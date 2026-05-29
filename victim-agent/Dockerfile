@@ -4,9 +4,13 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir hatchling packaging
 
-COPY pyproject.toml .
-COPY agent/ agent/
+# Install the promptshield SDK first
+COPY sdk/ /sdk/
+RUN pip install --no-cache-dir /sdk/
 
+# Install victim-agent
+COPY victim-agent/pyproject.toml .
+COPY victim-agent/agent/ agent/
 RUN pip install --no-cache-dir .
 
 RUN useradd -r -u 1000 appuser && chown -R appuser /app
