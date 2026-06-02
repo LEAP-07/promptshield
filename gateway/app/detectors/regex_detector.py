@@ -54,8 +54,8 @@ _RULES: list[_Rule] = [
 
     # ── Data exfiltration ────────────────────────────────────────────────────
     _Rule(
-        r"(?:send|post|transmit|upload|exfiltrate|leak)\s+(?:this|the|all|my|user)?\s*"
-        r"(?:data|information|content|history|conversation|messages?)\s+to\s+https?://",
+        r"(?:send|forward|post|transmit|upload|exfiltrate|leak)\s+(?:this|the|all|my|user|his|her|their)?\s*"
+        r"(?:data|information|content|history|conversation|messages?|details?|records?)\s+to\s+\S+",
         0.95, AttackType.data_exfiltration,
     ),
     _Rule(r"https?://\S+[?&](?:data|q|query|content|text|payload)=", 0.85, AttackType.data_exfiltration),
