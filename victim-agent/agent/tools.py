@@ -73,16 +73,26 @@ class SearchKnowledgeBaseInput(BaseModel):
 # ── Tool factories ────────────────────────────────────────────────────────────
 
 
-def _make_lookup_customer() -> StructuredTool:
+def _make_lookup_customer(inspector: ShieldInspector = None) -> StructuredTool:
     """Returns full customer record including credit card — realistic but risky."""
 
     async def _run(email: str) -> str:
         customer = crm.get_customer_by_email(email)
         if not customer:
             return f"No customer found with email address: {email}"
-        # Return full record — this is intentional. Real agents have DB access.
-        # The credit card being accessible is the exfiltration risk we're demonstrating.
-        return json.dumps(customer, indent=2)
+        content = json.dumps(customer, indent=2)
+
+        if inspector:
+            blocked, reason = await inspector(content)
+            if blocked:
+                logger.warning("shield_blocked_customer_lookup email=%s", email)
+                return (
+                    "[PROMPTSHIELD]: Customer record access was blocked.\n"
+                    f"Reason: {reason}\n"
+                    "Sensitive payment data exfiltration attempt detected."
+                )
+
+        return content
 
     return StructuredTool.from_function(
         coroutine=_run,
@@ -259,8 +269,8 @@ def get_tools(shield: Any = None) -> list[StructuredTool]:
     inspector = _make_inspector(shield) if shield is not None else None
     out_inspector = _make_output_inspector(shield) if shield is not None else None
     return [
-        _make_lookup_customer(),                    # internal DB — inspector not needed
-        _make_get_order_history(),                  # internal DB — inspector not needed
+        _make_lookup_customer(out_inspector),       # credit card in output → output inspector
+        _make_get_order_history(),                  # order data — no card numbers
         _make_read_email(inspector),                # attacker-controlled content → input inspector
         _make_send_email(out_inspector),            # outbound data → output inspector
         _make_search_knowledge_base(inspector),     # potentially planted articles → input inspector
