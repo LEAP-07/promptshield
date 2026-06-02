@@ -134,11 +134,23 @@ async def chat(
     )
 
     history = [m.model_dump() for m in body.conversation_history]
-    result = await run_agent(
-        message=body.message,
-        conversation_history=history,
-        shield_enabled=shield_enabled,
-    )
+    try:
+        result = await run_agent(
+            message=body.message,
+            conversation_history=history,
+            shield_enabled=shield_enabled,
+        )
+    except Exception as e:
+        if "content_filter" in str(e) or "content management policy" in str(e):
+            return ChatResponse(
+                response="⚠️ This message was blocked by AI safety filters.",
+                tool_calls=[],
+                blocked=True,
+                shield_event=None,
+                session_id=body.session_id,
+                shield_enabled=shield_enabled,
+            )
+        raise
 
     return ChatResponse(
         response=result["response"],
