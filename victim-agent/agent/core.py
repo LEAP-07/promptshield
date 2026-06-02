@@ -173,6 +173,7 @@ async def run_agent(
 ) -> dict[str, Any]:
     """Run the support agent and return response + tool call trace."""
     from promptshield import BlockedByShield, Shield
+    from .tools import ShieldToolBlocked
 
     tracker = ToolCallTracker()
     shield: Shield | None = None
@@ -221,6 +222,23 @@ async def run_agent(
             "tool_calls": tool_calls,
             "blocked": False,
             "shield_event": None,
+        }
+
+    except ShieldToolBlocked as exc:
+        return {
+            "response": (
+                "**PromptShield blocked this request.**\n\n"
+                "**Threat detected:** data_exfiltration\n"
+                "**Reason:** Sensitive payment data access was intercepted and blocked.\n\n"
+                f"*{exc.reason}*"
+            ),
+            "tool_calls": tracker.tool_calls,
+            "blocked": True,
+            "shield_event": {
+                "reasoning": exc.reason,
+                "attack_type": "data_exfiltration",
+                "score": 0.95,
+            },
         }
 
     except BlockedByShield as exc:

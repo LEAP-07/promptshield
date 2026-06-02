@@ -21,6 +21,12 @@ from typing import Any, Awaitable, Callable
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
+
+class ShieldToolBlocked(Exception):
+    def __init__(self, reason: str):
+        self.reason = reason
+        super().__init__(reason)
+
 from . import crm
 
 logger = logging.getLogger(__name__)
@@ -86,11 +92,7 @@ def _make_lookup_customer(inspector: ShieldInspector = None) -> StructuredTool:
             blocked, reason = await inspector(content)
             if blocked:
                 logger.warning("shield_blocked_customer_lookup email=%s", email)
-                return (
-                    "[PROMPTSHIELD]: Customer record access was blocked.\n"
-                    f"Reason: {reason}\n"
-                    "Sensitive payment data exfiltration attempt detected."
-                )
+                raise ShieldToolBlocked(reason)
 
         return content
 

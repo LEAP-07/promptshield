@@ -69,11 +69,20 @@ _RULES: list[_Rule] = [
 
     # Credit card number in output (exfiltration via tool or response)
     _Rule(r"\b\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}\b", 0.95, AttackType.data_exfiltration),
-    # Request to send account/payment data to an external email address
+    # Requests to access or share payment/card data
     _Rule(
-        r"send\s+.{0,150}(?:payment|credit\s*card|billing|account)\s+"
-        r"(?:info(?:rmation)?|data|details?|numbers?|history)\b",
-        0.85, AttackType.data_exfiltration,
+        r"(?:show|reveal|display|share|provide|give|get|fetch|retrieve|include)\s+.{0,100}"
+        r"(?:payment\s+information|credit\s*card|card\s+details?|card\s+number|billing\s+(?:info|details?))",
+        0.90, AttackType.data_exfiltration,
+    ),
+    _Rule(r"(?:including|with|and)\s+(?:payment|credit\s*card|billing)\s+(?:info(?:rmation)?|details?|number|data)", 0.88, AttackType.data_exfiltration),
+    _Rule(r"(?:full|complete|all)\s+account\s+details?", 0.82, AttackType.data_exfiltration),
+    # Request to forward/send account/payment data to an external address
+    _Rule(
+        r"(?:send|forward|post|transmit|upload|exfiltrate|leak)\s+.{0,150}"
+        r"(?:payment|credit\s*card|billing|account)\s+"
+        r"(?:info(?:rmation)?|data|details?|numbers?|history|records?)\b",
+        0.92, AttackType.data_exfiltration,
     ),
 
     # ── Indirect injection ───────────────────────────────────────────────────
