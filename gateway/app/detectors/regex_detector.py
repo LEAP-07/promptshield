@@ -85,6 +85,16 @@ _RULES: list[_Rule] = [
         0.92, AttackType.data_exfiltration,
     ),
 
+    # System prompt extraction attempts
+    _Rule(r"(?:reveal|output|print|show|tell\s+me|share|expose|repeat)\s+.{0,60}(?:system\s+prompt|system\s+instructions?|your\s+instructions?|your\s+rules|your\s+guidelines)", 0.93, AttackType.jailbreak),
+    _Rule(r"what\s+(?:are|were|is)\s+your\s+(?:system\s+prompt|instructions?|initial\s+prompt|original\s+prompt|rules|guidelines|directives?)", 0.88, AttackType.jailbreak),
+    _Rule(r"(?:ignore|forget|bypass|override)\s+.{0,40}(?:system\s+prompt|your\s+instructions?|your\s+rules|your\s+training|your\s+guidelines)", 0.92, AttackType.jailbreak),
+    _Rule(r"(?:starting\s+with|begin\s+with|verbatim|word\s+for\s+word)\s+.{0,60}(?:you\s+are|your\s+(?:system|instructions?|prompt))", 0.90, AttackType.jailbreak),
+    _Rule(r"(?:audit|verify|check)\s+.{0,60}(?:system\s+prompt|your\s+instructions?|your\s+configuration|your\s+setup)", 0.85, AttackType.jailbreak),
+    _Rule(r"(?:internal|engineering|admin|developer)\s+(?:audit|override|access|mode|team)", 0.80, AttackType.jailbreak),
+    _Rule(r"output\s+(?:the\s+)?(?:exact|full|complete|verbatim)\s+text\s+of\s+your", 0.93, AttackType.jailbreak),
+    _Rule(r"(?:policy\s+violation|must\s+comply|required\s+to\s+(?:share|reveal|output))", 0.85, AttackType.jailbreak),
+
     # ── Indirect injection ───────────────────────────────────────────────────
     _Rule(r"when\s+(?:you\s+)?(?:read|see|process|encounter)\s+this", 0.72, AttackType.indirect_injection),
     _Rule(r"tell\s+the\s+(?:ai|assistant|model|llm|chatbot)\s+to", 0.75, AttackType.indirect_injection),
