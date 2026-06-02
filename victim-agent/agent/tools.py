@@ -148,11 +148,7 @@ def _make_read_email(inspector: ShieldInspector = None) -> StructuredTool:
             blocked, reason = await inspector(content)
             if blocked:
                 logger.warning("shield_blocked_email_content email_id=%s", email_id)
-                return (
-                    f"[PROMPTSHIELD]: The content of email {email_id} was blocked.\n"
-                    f"Reason: {reason}\n"
-                    f"This email may contain a prompt injection attack."
-                )
+                raise ShieldToolBlocked(reason)
 
         return content
 
@@ -242,11 +238,7 @@ def _make_search_knowledge_base(inspector: ShieldInspector = None) -> Structured
                     logger.warning(
                         "shield_blocked_kb_article id=%s query=%s", article["id"], query
                     )
-                    results.append(
-                        f"[PROMPTSHIELD]: Article '{article['title']}' was blocked "
-                        f"(possible injection payload detected)."
-                    )
-                    continue
+                    raise ShieldToolBlocked(reason)
 
             results.append(content)
 
