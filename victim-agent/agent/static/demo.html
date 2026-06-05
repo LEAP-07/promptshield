@@ -315,7 +315,6 @@
       document.getElementById('send-btn').disabled = true;
 
       appendUserMessage(message);
-      conversationHistory.push({ role: 'user', content: message });
       showTyping(true);
 
       try {
@@ -336,6 +335,7 @@
         appendAgentMessage(data.response, data.blocked, data.shield_event);
 
         if (!data.blocked) {
+          conversationHistory.push({ role: 'user', content: message });
           conversationHistory.push({ role: 'assistant', content: data.response });
         }
 
