@@ -185,8 +185,15 @@ async def run_agent(
                 endpoint=os.getenv("GATEWAY_URL", "http://localhost:8000"),
                 fail_mode="fail_open",
             )
+            # Inspect only the current message — not the full history.
+            # shield.wrap inspects everything including history which causes
+            # false positives when prior attack messages are in the context.
+            inspect_result = await shield.inspect(message, direction="input")
+            if inspect_result.verdict == "block":
+                raise BlockedByShield(inspect_result)
+            # Build agent with shield for tool-level inspection only
             agent = _build_agent(shield=shield)
-            invoke_target = shield.wrap(agent)
+            invoke_target = agent
         else:
             agent = _build_agent(shield=None)
             invoke_target = agent
